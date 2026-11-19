@@ -12,16 +12,9 @@ The plugin works with the free public LanguageTool API, with [LanguageTool Premi
 
 ## Installation
 
-1. In Obsidian, open Settings, then Community plugins, and turn off "Restricted mode" (read the safety warning).
-2. Click Browse, search for "LanguageTool Integration", and click Install.
-3. Click Enable.
+LanguageTool Copilot is not in the community plugin browser. Install it manually: build it with `yarn install` and `yarn build` (or take the files from a [release](https://github.com/Rogue-Sector/languagetool-copilot/releases) once there is one) and copy `main.js`, `styles.css`, and `manifest.json` into `VaultFolder/.obsidian/plugins/languagetool-copilot/`. Then enable it under Settings, Community plugins.
 
-<details>
-<summary>Manual installation</summary>
-
-Copy `main.js`, `styles.css`, and `manifest.json` from the [latest release](https://github.com/Clemens-E/obsidian-languagetool-plugin/releases/latest) into `VaultFolder/.obsidian/plugins/obsidian-languagetool-plugin/`. Release assets are signed with [GitHub artifact attestations](https://docs.github.com/en/actions/security-for-github-actions/using-artifact-attestations/using-artifact-attestations-to-establish-provenance-for-builds); you can verify them with `gh attestation verify main.js -R Clemens-E/obsidian-languagetool-plugin`.
-
-</details>
+It has its own plugin ID, so it can be installed next to the original [LanguageTool Integration](https://github.com/Clemens-E/obsidian-languagetool-plugin), but enable only one of them at a time, or you will see every underline twice.
 
 ## Usage
 
@@ -69,6 +62,7 @@ The `Aa` button in the status bar shows a sync icon while a check is running. Cl
 | Jump to previous Suggestion | Selects the previous underline before the cursor |
 | Accept suggestion #1 / #2 / #3 | With the cursor inside an underline, applies the first, second, or third suggested replacement directly, without opening the popover |
 | Ignore suggestion at cursor | With the cursor inside an underline, ignores that match for the rest of the session, like the popover's ignore button |
+| Suggest alternatives for selection | Shows AI-written rewrites of the selected text, each with an insert button (see [AI alternatives](#ai-alternatives)). Only available when an AI provider is set |
 | Add word at cursor to personal dictionary | With the cursor inside a spelling underline, adds the word to your personal dictionary (the same one Obsidian's own spellchecker uses). A notice offers an undo |
 
 ### Pinning a note's language
@@ -126,7 +120,7 @@ When auto-detect recognizes a language that has regional variants, it cannot kno
 
 ## Privacy and self-hosting
 
-Checking text means sending it to the configured LanguageTool server. With the standard or premium endpoint, that is LanguageTool's cloud; their [privacy policy](https://languagetool.org/legal/privacy) applies. The plugin only ever sends the text being checked (the whole document, the selection, or the changed lines during autocheck), never your whole vault.
+Checking text means sending it to the configured LanguageTool server. With the standard or premium endpoint, that is LanguageTool's cloud; their [privacy policy](https://languagetool.org/legal/privacy) applies. The plugin only ever sends the text being checked (the whole document, the selection, or the changed lines during autocheck), never your whole vault. If you turn on [AI alternatives](#ai-alternatives), single sentences also go to the AI provider you choose; that feature is off by default.
 
 If you do not want your notes to leave your machine, run your own LanguageTool server and point the plugin at it with the **Custom URL** endpoint. The easiest way is the [Docker image](https://hub.docker.com/r/erikvl87/languagetool):
 
@@ -135,6 +129,50 @@ docker run -d --name languagetool -p 8010:8010 erikvl87/languagetool
 ```
 
 Then set the endpoint to Custom URL and enter `http://localhost:8010`.
+
+## AI alternatives
+
+LanguageTool Copilot can show AI-written rewrites of a sentence next to LanguageTool's suggestions. The feature is **off by default**: nothing is sent to any AI provider until you choose one under Settings, LanguageTool Copilot, **AI alternatives**.
+
+- **In the popover:** click an underlined issue and the popover shows LanguageTool's message and replacements as before, plus up to three rewrites of the whole sentence containing the issue. **Insert** replaces that sentence in the note. Alternatives are only requested when a popover opens, and they are cached per sentence, so reopening the popover does not ask again.
+- **For any selection:** select text and run **Suggest alternatives for selection** from the command palette. This works even when LanguageTool finds nothing.
+
+The model is asked to keep your meaning and voice, make the smallest change that fixes the flagged issue (LanguageTool's message is passed along as context), and not add facts or flourishes.
+
+### What is sent where
+
+| Provider | Destination | What is sent |
+| --- | --- | --- |
+| Off (default) | Nothing | Nothing |
+| Anthropic API key | Anthropic, `api.anthropic.com` | The sentence around the match (or your selection) and LanguageTool's message |
+| Sign in with ChatGPT | OpenAI, `api.openai.com` | The sentence around the match (or your selection) and LanguageTool's message |
+
+- The whole note is never sent, only the sentence (at most 1,500 characters).
+- Notes tagged `lt-ignore` in their frontmatter are never sent, in the popover or with the selection command.
+- The settings tab always states which provider your text goes to.
+- Keys and tokens are kept in Obsidian's encrypted SecretStorage on the device, never in `data.json`, so they do not sync and do not end up in vault backups. AI alternatives therefore need Obsidian 1.11.4 or newer.
+
+### Setting up Anthropic (API key)
+
+1. Create an API key in the [Claude Console](https://platform.claude.com/settings/keys). Usage is billed to your Console account.
+2. In the plugin settings, set **AI provider** to **Anthropic API key**.
+3. Under **Anthropic API key**, create or select a secret and paste the key into it.
+4. Optionally enter a **model** ID. Leave it empty for `claude-haiku-5-5`.
+
+This provider uses the Anthropic Messages API with your own API key. The plugin does not offer, and will not add, signing in with a Claude.ai account: Anthropic's terms do not allow third-party apps to use Claude Free, Pro or Max plan credentials.
+
+### Setting up Sign in with ChatGPT (desktop only)
+
+1. In the plugin settings, set **AI provider** to **Sign in with ChatGPT**.
+2. Click **Continue with ChatGPT**. Your browser opens OpenAI's sign-in page; approve access, including use of your ChatGPT plan.
+3. Return to Obsidian. The settings show the account you signed in with and a **Manage usage** link.
+
+Requests then use your ChatGPT Plus or Pro plan through OpenAI's [Sign in with ChatGPT for open-source apps](https://developers.openai.com/siwc/token-sharing-open-source), and count towards the plan's usage limits (Plus has a five-hour limit that is shared with every other app you use it in). Leave **model** empty to use the first model your account offers, or enter one.
+
+- Sign-in waits for the browser on a local `127.0.0.1` address, so it only works in the desktop app. On mobile, use the Anthropic provider or leave AI alternatives off; the rest of the plugin works as before.
+- **Sign out** revokes the sign-in with OpenAI and deletes the tokens from this device. **Forget this device** also deletes the app registration, which you need to switch to another ChatGPT account. You can also disconnect the app in your ChatGPT settings.
+- If the sign-in expires or is revoked, the popover asks you to sign in again.
+- This is a preview program of OpenAI's and may change. It is offered for open-source apps that run locally, which this plugin is.
 
 ## Premium Accounts
 
