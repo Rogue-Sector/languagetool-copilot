@@ -16,6 +16,8 @@ import {
   ignoreUnderline
 } from "./underlineStateField";
 import { addWordToDictionaryWithUndo } from "./dictionaryAction";
+import { findSentence, MaxSentenceLength } from "../ai/sentence";
+import { renderAlternatives } from "../ai/ui";
 
 function contructTooltip(
   plugin: LanguageToolPlugin,
@@ -139,6 +141,24 @@ function contructTooltip(
           }
         });
       });
+
+      // AI alternatives load only now, when the popover opens. Only the
+      // sentence around the match and LanguageTool's message are sent.
+      const alternatives = plugin.alternatives;
+      if (alternatives.isPopoverEnabled() && alternatives.isViewAllowed(view)) {
+        const range = findSentence(
+          view.state.doc,
+          underline.from,
+          underline.to
+        );
+        if (range && range.text.length <= MaxSentenceLength) {
+          renderAlternatives(root.createDiv(), alternatives, {
+            view,
+            range,
+            issue: message || title
+          });
+        }
+      }
     }
   );
 }

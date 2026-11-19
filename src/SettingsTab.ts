@@ -15,6 +15,8 @@ import {
 import LanguageToolPlugin from ".";
 import { logs } from "./api";
 import { normalizeServerUrl } from "./helpers";
+import { AiProviderId } from "./ai/types";
+import { getAiSection } from "./ai/settings";
 
 const MinuteInSeconds = 60;
 const SecondToMillisecondConversion = 1000;
@@ -67,6 +69,17 @@ export interface LanguageToolPluginSettings {
   ruleOtherCategories?: string;
   ruleOtherRules?: string;
   ruleOtherDisabledRules?: string;
+
+  // AI alternatives. Off unless the user picks a provider. Keys and tokens
+  // never live here: the Anthropic key is referenced by its SecretStorage
+  // name, and the ChatGPT sign-in is kept in SecretStorage entirely.
+  aiProvider: AiProviderId;
+  aiShowInPopover: boolean;
+  aiAlternativesCount: number;
+  aiAnthropicModel: string;
+  aiChatgptModel: string;
+  aiAnthropicKeySecretName?: string;
+  aiChatgptWelcomeShown: boolean;
 }
 
 export const DEFAULT_SETTINGS: LanguageToolPluginSettings = {
@@ -78,7 +91,14 @@ export const DEFAULT_SETTINGS: LanguageToolPluginSettings = {
   shouldAutoCheck: false,
   autoCheckDelay: MinStandardAutoCheckDelay,
 
-  pickyMode: false
+  pickyMode: false,
+
+  aiProvider: "off",
+  aiShowInPopover: true,
+  aiAlternativesCount: 3,
+  aiAnthropicModel: "",
+  aiChatgptModel: "",
+  aiChatgptWelcomeShown: false
 };
 
 export function getServerUrl(value: string) {
@@ -106,13 +126,13 @@ interface LanguageToolLanguage {
 // One setting row: name and desc feed Obsidian's settings search, render
 // builds the controls. Rendered declaratively on Obsidian 1.13+ and by the
 // imperative display() fallback on older versions.
-interface RenderedSettingDefinition {
+export interface RenderedSettingDefinition {
   name: string;
   desc?: string;
   render: (setting: Setting) => void;
 }
 
-interface SettingsSection {
+export interface SettingsSection {
   heading?: string;
   items: RenderedSettingDefinition[];
 }
@@ -250,7 +270,7 @@ export class LanguageToolSettingsTab extends PluginSettingTab {
   // Re-render the tab after a change that swaps controls (e.g. the API key
   // storage mode). Obsidian 1.13+ re-renders declaratively via update();
   // older versions re-run the imperative fallback.
-  private rerender(): void {
+  public rerender(): void {
     if (requireApiVersion("1.13.0")) {
       this.update();
     } else {
@@ -810,7 +830,12 @@ export class LanguageToolSettingsTab extends PluginSettingTab {
       ]
     };
 
-    return [mainSection, varietySection, ruleSection];
+    return [
+      mainSection,
+      varietySection,
+      ruleSection,
+      getAiSection(this.app, this.plugin, () => this.rerender())
+    ];
   }
 
   // Declarative settings (Obsidian 1.13+): rendering and settings search are
