@@ -1,4 +1,6 @@
-# LanguageTool Integration
+# LanguageTool Copilot
+
+> **Fork of [LanguageTool Integration](https://github.com/Clemens-E/obsidian-languagetool-plugin)** by [Clemens Ertle](https://github.com/Clemens-E), licensed under AGPL-3.0. This fork adds optional AI-written sentence alternatives next to LanguageTool’s suggestions (see [AI alternatives](#ai-alternatives)). It is maintained at [Rogue-Sector/languagetool-copilot](https://github.com/Rogue-Sector/languagetool-copilot) and stays open source under the same licence. Please report problems with the fork there, not upstream.
 
 Check grammar and spelling with [LanguageTool](https://languagetool.org/) without leaving [Obsidian](https://obsidian.md). Run a check on the whole document or just the selected text, or let the plugin check automatically as you type. Mistakes are underlined in the editor; click one to review suggestions, apply a correction, or add the word to your personal dictionary.
 
