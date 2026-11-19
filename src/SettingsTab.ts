@@ -129,6 +129,8 @@ interface LanguageToolLanguage {
 export interface RenderedSettingDefinition {
   name: string;
   desc?: string;
+  // Evaluated on every render, so rows can depend on the current settings
+  visible?: () => boolean;
   render: (setting: Setting) => void;
 }
 
@@ -858,6 +860,9 @@ export class LanguageToolSettingsTab extends PluginSettingTab {
         new Setting(containerEl).setName(section.heading).setHeading();
       }
       for (const def of section.items) {
+        if (def.visible && !def.visible()) {
+          continue;
+        }
         const setting = new Setting(containerEl).setName(def.name);
         if (def.desc) {
           setting.setDesc(def.desc);
