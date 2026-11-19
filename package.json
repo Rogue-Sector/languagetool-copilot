@@ -1,5 +1,5 @@
 {
-  "name": "obsidian-languagetool-plugin",
+  "name": "languagetool-copilot",
   "version": "0.9.7",
   "description": "An Obsidian plugin that provides grammar and spell checking through LanguageTool integration",
   "main": "main.js",
@@ -23,10 +23,14 @@
     {
       "name": "Matthew Meyers",
       "url": "https://github.com/mgmeyers"
+    },
+    {
+      "name": "BiggestFren",
+      "url": "https://github.com/Rogue-Sector"
     }
   ],
   "repository": {
-    "url": "https://github.com/Clemens-E/obsidian-languagetool-plugin"
+    "url": "https://github.com/Rogue-Sector/languagetool-copilot"
   },
   "devDependencies": {
     "@codemirror/language": "https://github.com/lishid/cm-language",

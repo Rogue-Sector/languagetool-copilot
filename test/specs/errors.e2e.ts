@@ -16,7 +16,7 @@ describe("Error handling", function() {
     await closeSettings();
     await browser.executeObsidian(({ app }) => {
       const settings = (app as any).plugins.plugins[
-        "obsidian-languagetool-plugin"
+        "languagetool-copilot"
       ].settings;
       settings.urlMode = "standard";
       settings.serverUrl = "https://api.languagetool.org";
@@ -27,7 +27,7 @@ describe("Error handling", function() {
     // Point the plugin at a closed local port; no network involved
     await browser.executeObsidian(({ app }) => {
       const settings = (app as any).plugins.plugins[
-        "obsidian-languagetool-plugin"
+        "languagetool-copilot"
       ].settings;
       settings.urlMode = "custom";
       settings.serverUrl = "http://127.0.0.1:1";

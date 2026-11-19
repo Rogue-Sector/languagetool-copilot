@@ -1,8 +1,6 @@
 import { browser, expect } from "@wdio/globals";
 import { obsidianPage } from "wdio-obsidian-service";
-import { useEnvLanguageToolServer } from "../helpers";
-
-const PLUGIN_ID = "obsidian-languagetool-plugin";
+import { PLUGIN_ID, useEnvLanguageToolServer } from "../helpers";
 
 // Background tabs stay mounted in the DOM, so every selector must be scoped
 // to the active leaf or it can match stale editors from earlier tests
@@ -248,7 +246,7 @@ describe("Detection and suggestions", function() {
   it("underlines mistakes automatically while typing", async function() {
     await obsidianPage.openFile("Typing.md");
     await browser.executeObsidian(({ app }) => {
-      (app as any).plugins.plugins["obsidian-languagetool-plugin"].settings
+      (app as any).plugins.plugins["languagetool-copilot"].settings
         .shouldAutoCheck = true;
     });
 
@@ -261,7 +259,7 @@ describe("Detection and suggestions", function() {
       await browser.$(`${ACTIVE} .lt-underline`).waitForExist({ timeout: 20000 });
     } finally {
       await browser.executeObsidian(({ app }) => {
-        (app as any).plugins.plugins["obsidian-languagetool-plugin"].settings
+        (app as any).plugins.plugins["languagetool-copilot"].settings
           .shouldAutoCheck = false;
       });
     }
@@ -332,7 +330,7 @@ describe("Detection and suggestions", function() {
     // The readability rule counts words per sentence; the long link target
     // trips it only if it is sent as prose
     await browser.executeObsidian(({ app }) => {
-      (app as any).plugins.plugins["obsidian-languagetool-plugin"].settings
+      (app as any).plugins.plugins["languagetool-copilot"].settings
         .ruleOtherRules = "READABILITY_RULE_DIFFICULT";
     });
     try {
@@ -343,7 +341,7 @@ describe("Detection and suggestions", function() {
       await expect(browser.$(`${ACTIVE} .lt-underline`)).not.toExist();
     } finally {
       await browser.executeObsidian(({ app }) => {
-        (app as any).plugins.plugins["obsidian-languagetool-plugin"].settings
+        (app as any).plugins.plugins["languagetool-copilot"].settings
           .ruleOtherRules = undefined;
       });
     }

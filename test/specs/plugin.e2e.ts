@@ -1,8 +1,6 @@
 import { browser, expect } from "@wdio/globals";
 import { obsidianPage } from "wdio-obsidian-service";
-import { useEnvLanguageToolServer } from "../helpers";
-
-const PLUGIN_ID = "obsidian-languagetool-plugin";
+import { PLUGIN_ID, useEnvLanguageToolServer } from "../helpers";
 
 // The ribbon icon is driven by a setting, so the test flips the setting the
 // way the settings tab does
@@ -10,7 +8,7 @@ async function setRibbonIcon(enabled: boolean): Promise<void> {
   await browser.executeObsidian(
     ({ app }, value: boolean) => {
       const plugin = (app as any).plugins.plugins[
-        "obsidian-languagetool-plugin"
+        "languagetool-copilot"
       ];
       plugin.settings.showRibbonIcon = value;
       plugin.updateRibbonIcon();
@@ -26,7 +24,7 @@ describe("LanguageTool plugin", function() {
 
   it("loads and is enabled", async function() {
     const loaded = await browser.executeObsidian(({ app }) =>
-      Boolean((app as any).plugins.plugins["obsidian-languagetool-plugin"])
+      Boolean((app as any).plugins.plugins["languagetool-copilot"])
     );
     expect(loaded).toBe(true);
   });

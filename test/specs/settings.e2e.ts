@@ -21,7 +21,7 @@ describe("Settings tab", function() {
     await closeSettings();
     await browser.executeObsidian(({ app }) => {
       const settings = (app as any).plugins.plugins[
-        "obsidian-languagetool-plugin"
+        "languagetool-copilot"
       ].settings;
       settings.urlMode = "standard";
       settings.serverUrl = "https://api.languagetool.org";
@@ -83,12 +83,12 @@ describe("Settings tab", function() {
     // editable, so the plugin must repair the value on load
     await browser.executeObsidian(async ({ app }) => {
       const plugins = (app as any).plugins;
-      const plugin = plugins.plugins["obsidian-languagetool-plugin"];
+      const plugin = plugins.plugins["languagetool-copilot"];
       plugin.settings.urlMode = "premium";
       plugin.settings.serverUrl = "https://api.languagetoolplus.com/v2";
       await plugin.saveSettings();
-      await plugins.disablePlugin("obsidian-languagetool-plugin");
-      await plugins.enablePlugin("obsidian-languagetool-plugin");
+      await plugins.disablePlugin("languagetool-copilot");
+      await plugins.enablePlugin("languagetool-copilot");
     });
 
     expect(await getSetting<string>("urlMode")).toBe("premium");
@@ -96,7 +96,7 @@ describe("Settings tab", function() {
 
     await browser.executeObsidian(async ({ app }) => {
       const plugin = (app as any).plugins.plugins[
-        "obsidian-languagetool-plugin"
+        "languagetool-copilot"
       ];
       plugin.settings.urlMode = "standard";
       plugin.settings.serverUrl = "https://api.languagetool.org";
@@ -112,7 +112,7 @@ describe("Settings tab", function() {
     await dropdown.selectByAttribute("value", "custom");
     await inMainWindow(() =>
       browser.executeObsidian(({ app }) => {
-        (app as any).plugins.plugins["obsidian-languagetool-plugin"].settings
+        (app as any).plugins.plugins["languagetool-copilot"].settings
           .autoCheckDelay = 50;
       })
     );
@@ -157,7 +157,7 @@ describe("Settings tab", function() {
 
   it("offers auto-detect immediately and remembers the mother tongue", async function() {
     await browser.executeObsidian(({ app }) => {
-      (app as any).plugins.plugins["obsidian-languagetool-plugin"].settings
+      (app as any).plugins.plugins["languagetool-copilot"].settings
         .motherTongue = "de-DE";
     });
     await openPluginSettings();
@@ -177,7 +177,7 @@ describe("Settings tab", function() {
     const isUnset = await inMainWindow(() =>
       browser.executeObsidian(
         ({ app }) =>
-          (app as any).plugins.plugins["obsidian-languagetool-plugin"]
+          (app as any).plugins.plugins["languagetool-copilot"]
             .settings.motherTongue === undefined
       )
     );

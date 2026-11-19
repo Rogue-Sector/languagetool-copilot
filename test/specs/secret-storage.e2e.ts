@@ -41,7 +41,7 @@ describe("Secret storage", function() {
   it("moves the plaintext key into a secret when enabling secure storage", async function() {
     await browser.executeObsidian(({ app }) => {
       const settings = (app as any).plugins.plugins[
-        "obsidian-languagetool-plugin"
+        "languagetool-copilot"
       ].settings;
       settings.apiKeyStorage = "local";
       settings.apikey = "plain-key-123";
@@ -63,7 +63,7 @@ describe("Secret storage", function() {
     // The synced data.json on disk must no longer contain the key
     const savedData = await inMainWindow(() =>
       browser.executeObsidian(async ({ app }) =>
-        (app as any).plugins.plugins["obsidian-languagetool-plugin"].loadData()
+        (app as any).plugins.plugins["languagetool-copilot"].loadData()
       )
     );
     expect(JSON.stringify(savedData)).not.toContain("plain-key-123");
@@ -80,7 +80,7 @@ describe("Secret storage", function() {
         "roundtrip-key"
       );
       const settings = (app as any).plugins.plugins[
-        "obsidian-languagetool-plugin"
+        "languagetool-copilot"
       ].settings;
       settings.apiKeyStorage = "secret";
       settings.apikey = undefined;
@@ -102,7 +102,7 @@ describe("Secret storage", function() {
   it("refuses to disable secure storage when the secret is missing here", async function() {
     await browser.executeObsidian(({ app }) => {
       const settings = (app as any).plugins.plugins[
-        "obsidian-languagetool-plugin"
+        "languagetool-copilot"
       ].settings;
       settings.apiKeyStorage = "secret";
       settings.apikey = undefined;
@@ -134,7 +134,7 @@ describe("Secret storage", function() {
     // into a vault that runs in secret mode; the next load moves it
     await browser.executeObsidian(async ({ app }) => {
       const plugin = (app as any).plugins.plugins[
-        "obsidian-languagetool-plugin"
+        "languagetool-copilot"
       ];
       plugin.settings.apiKeyStorage = "secret";
       plugin.settings.apikey = "synced-plain-key";
@@ -143,13 +143,13 @@ describe("Secret storage", function() {
     });
 
     await browser.executeObsidian(async ({ app }) => {
-      await (app as any).plugins.disablePlugin("obsidian-languagetool-plugin");
-      await (app as any).plugins.enablePlugin("obsidian-languagetool-plugin");
+      await (app as any).plugins.disablePlugin("languagetool-copilot");
+      await (app as any).plugins.enablePlugin("languagetool-copilot");
     });
     await browser.waitUntil(async () =>
       browser.executeObsidian(({ app }) =>
         Boolean(
-          (app as any).plugins.plugins["obsidian-languagetool-plugin"]
+          (app as any).plugins.plugins["languagetool-copilot"]
             ?.settings?.apikeySecretName
         )
       )
@@ -161,7 +161,7 @@ describe("Secret storage", function() {
     );
     expect(await getSecret(DEFAULT_SECRET_NAME)).toBe("synced-plain-key");
     const savedData = await browser.executeObsidian(async ({ app }) =>
-      (app as any).plugins.plugins["obsidian-languagetool-plugin"].loadData()
+      (app as any).plugins.plugins["languagetool-copilot"].loadData()
     );
     expect(JSON.stringify(savedData)).not.toContain("synced-plain-key");
   });
