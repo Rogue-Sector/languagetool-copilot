@@ -1,7 +1,7 @@
 import { browser, expect } from "@wdio/globals";
 import { env } from "node:process";
 
-export const PLUGIN_ID = "obsidian-languagetool-plugin";
+export const PLUGIN_ID = "languagetool-copilot";
 
 // Obsidian can open the settings dialog in a popout OS window (a separate
 // webdriver window handle). The executeObsidian bridge only exists in the
@@ -34,7 +34,7 @@ export async function openPluginSettings(): Promise<void> {
   await browser.switchToWindow(mainHandle);
   await browser.executeObsidian(({ app }) => {
     (app as any).setting.open();
-    (app as any).setting.openTabById("obsidian-languagetool-plugin");
+    (app as any).setting.openTabById("languagetool-copilot");
   });
   await browser.waitUntil(async () => {
     for (const handle of await browser.getWindowHandles()) {
@@ -66,7 +66,7 @@ export async function getSetting<T>(key: string): Promise<T> {
   return inMainWindow(() =>
     browser.executeObsidian(
       ({ app }, k: string) =>
-        (app as any).plugins.plugins["obsidian-languagetool-plugin"]
+        (app as any).plugins.plugins["languagetool-copilot"]
           .settings[k],
       key
     ) as Promise<T>
@@ -82,7 +82,7 @@ export async function useEnvLanguageToolServer(): Promise<void> {
   await browser.executeObsidian(
     ({ app }, serverUrl: string) => {
       const settings = (app as any).plugins.plugins[
-        "obsidian-languagetool-plugin"
+        "languagetool-copilot"
       ].settings;
       settings.urlMode = "custom";
       settings.serverUrl = serverUrl;

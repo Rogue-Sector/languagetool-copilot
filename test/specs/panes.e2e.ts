@@ -8,14 +8,14 @@ describe("Multi-pane auto-check", function() {
 
   after(async function() {
     await browser.executeObsidian(({ app }) => {
-      (app as any).plugins.plugins["obsidian-languagetool-plugin"].settings
+      (app as any).plugins.plugins["languagetool-copilot"].settings
         .shouldAutoCheck = false;
     });
   });
 
   it("checks each pane independently", async function() {
     await browser.executeObsidian(async ({ app }) => {
-      (app as any).plugins.plugins["obsidian-languagetool-plugin"].settings
+      (app as any).plugins.plugins["languagetool-copilot"].settings
         .shouldAutoCheck = true;
       const vault = (app as any).vault;
       const leaf1 = (app as any).workspace.getLeaf(false);

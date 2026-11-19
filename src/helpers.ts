@@ -66,6 +66,26 @@ export function getDocumentAutoCheck(
   return undefined;
 }
 
+// Notes tagged lt-ignore are never checked, and their text is never sent to
+// an AI provider either. Frontmatter tags can be a list or a comma-separated
+// string, and either form must match whole tags only.
+export function isDocumentIgnored(
+  app: App,
+  file: TFile | null | undefined
+): boolean {
+  if (!file) {
+    return false;
+  }
+  const tags: unknown = app.metadataCache.getFileCache(file)?.frontmatter
+    ?.tags;
+  const tagList: string[] = Array.isArray(tags)
+    ? tags.map(String)
+    : typeof tags === "string"
+    ? tags.split(",").map(t => t.trim())
+    : [];
+  return tagList.includes("lt-ignore");
+}
+
 // A note can pin the language LanguageTool checks it in (#52, #83). The
 // plugin's own key comes first; "language" and "lang" are accepted as well
 // because obsidian-dictionary and similar plugins already use them. Returns

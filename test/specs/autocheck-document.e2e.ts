@@ -22,7 +22,7 @@ async function setGlobalAutoCheck(enabled: boolean): Promise<void> {
   await browser.executeObsidian(
     ({ app }, value: boolean) => {
       const plugin = (app as any).plugins.plugins[
-        "obsidian-languagetool-plugin"
+        "languagetool-copilot"
       ];
       plugin.settings.shouldAutoCheck = value;
       // Keep the debounce short: these tests wait out the full delay

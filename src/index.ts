@@ -25,7 +25,8 @@ import {
   buildNfcOffsetMap,
   editorToCodeMirror,
   getDocumentAutoCheck,
-  getDocumentLanguage
+  getDocumentLanguage,
+  isDocumentIgnored
 } from "./helpers";
 import { getDetectionResult, LanguageToolApiCredentials } from "./api";
 import { buildUnderlineExtension } from "./cm6/underlineExtension";
@@ -38,6 +39,9 @@ import {
   underlineField
 } from "./cm6/underlineStateField";
 import { addWordToDictionaryWithUndo } from "./cm6/dictionaryAction";
+import { AlternativesService } from "./ai/service";
+import { MaxSentenceLength } from "./ai/sentence";
+import { AlternativesModal } from "./ai/ui";
 
 // Default SecretStorage secret name used when migrating an existing plaintext
 // key. Secret names must be lowercase alphanumeric with optional dashes.
@@ -86,6 +90,7 @@ function findUnderlineAtCursor(
 
 export default class LanguageToolPlugin extends Plugin {
   public settings: LanguageToolPluginSettings;
+  public alternatives: AlternativesService;
   private statusBarText: HTMLElement;
 
   private readonly hashLru = new QuickLRU<number, LanguageToolApi>({
@@ -159,6 +164,8 @@ export default class LanguageToolPlugin extends Plugin {
     await this.resolveApiKeyStorageMode();
     await this.migrateStrayPlaintextKey();
 
+    this.alternatives = new AlternativesService(this);
+
     this.addSettingTab(new LanguageToolSettingsTab(this.app, this));
 
     // Status bar
@@ -182,6 +189,7 @@ export default class LanguageToolPlugin extends Plugin {
 
   public onunload() {
     this.hashLru.clear();
+    this.alternatives?.chatgptAuth?.cancelSignIn();
   }
 
   private registerCommands() {
@@ -333,6 +341,44 @@ export default class LanguageToolPlugin extends Plugin {
             ignoreUnderline.of({ from: underline.from, to: underline.to })
           ]
         });
+      }
+    });
+
+    this.addCommand({
+      id: "ltsuggest-alternatives",
+      name: "Suggest alternatives for selection",
+      editorCheckCallback: (checking, editor, view) => {
+        const selected = editor.getSelection();
+        const available =
+          this.alternatives.isEnabled() && selected.trim().length > 0;
+        if (checking) {
+          return available;
+        }
+        if (!available) {
+          return;
+        }
+        // Notes tagged lt-ignore never leave the device
+        if (!this.alternatives.isFileAllowed(view.file)) {
+          new Notice(
+            "This note is tagged lt-ignore, so its text is not sent for AI alternatives.",
+            5000
+          );
+          return;
+        }
+        if (selected.length > MaxSentenceLength) {
+          new Notice(
+            `Select at most ${MaxSentenceLength} characters for AI alternatives.`,
+            5000
+          );
+          return;
+        }
+        const editorView = editorToCodeMirror(editor);
+        const { from, to } = editorView.state.selection.main;
+        new AlternativesModal(this.app, this.alternatives, editorView, {
+          from,
+          to,
+          text: editorView.state.sliceDoc(from, to)
+        }).open();
       }
     });
 
@@ -562,18 +608,7 @@ export default class LanguageToolPlugin extends Plugin {
     // triggered by the user and deserves feedback
     const manuallyTriggered = from === undefined && to === undefined;
 
-    // ignore lt-ignore tags; frontmatter tags can be a list or a
-    // comma-separated string, and either form must match whole tags only
-    const frontmatter = view.file
-      ? this.app.metadataCache.getFileCache(view.file)?.frontmatter
-      : undefined;
-    const tags: unknown = frontmatter?.tags;
-    const tagList: string[] = Array.isArray(tags)
-      ? tags.map(String)
-      : typeof tags === "string"
-      ? tags.split(",").map(t => t.trim())
-      : [];
-    if (tagList.includes("lt-ignore")) {
+    if (isDocumentIgnored(this.app, view.file)) {
       return;
     }
 

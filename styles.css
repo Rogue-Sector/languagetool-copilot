@@ -232,3 +232,74 @@
 .lt-dict-undo-btn {
   margin-left: var(--size-4-2);
 }
+
+.lt-alternatives {
+  border-top: 1px solid var(--background-modifier-border);
+  padding: 8px 12px 12px;
+}
+
+.lt-alternatives-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px;
+  margin-bottom: 6px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.lt-alternatives-title {
+  font-weight: 600;
+}
+
+.lt-alternatives-loading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted);
+}
+
+.lt-alternatives-loading > .lt-loading {
+  display: flex;
+}
+
+.lt-alternative {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.lt-alternative + .lt-alternative {
+  border-top: 1px dashed var(--background-modifier-border);
+}
+
+.lt-alternative-text {
+  flex: 1;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.lt-alternative-insert {
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  padding: 2px 8px;
+}
+
+.lt-alternatives-error {
+  color: var(--text-error);
+  margin-bottom: 6px;
+}
+
+.lt-alternatives-original {
+  padding: 8px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  background-color: var(--background-secondary);
+  color: var(--text-muted);
+}
+
+.lt-alternatives-modal .lt-alternatives {
+  border-top: none;
+  padding: 0;
+}
